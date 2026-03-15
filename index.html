@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Plantilla Claude</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #F0F4F8; min-height: 100vh; padding-bottom: 60px; }
+
+    /* BANNER */
+    #banner { background: #1F3864; padding: 28px 24px 22px; }
+    #banner .inner { max-width: 700px; margin: 0 auto; }
+    #banner .etiqueta { font-size: 10px; letter-spacing: 3px; color: #7EA8D4; text-transform: uppercase; margin-bottom: 6px; }
+    #banner h1 { color: #fff; font-size: 24px; font-weight: 700; margin: 0 0 6px; line-height: 1.2; }
+    #banner p { color: #BDD7EE; font-size: 13px; font-style: italic; }
+
+    /* PROGRESO */
+    #barra-wrap { background: #162d52; padding: 10px 24px; }
+    #barra-inner { max-width: 700px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+    #barra-bg { flex: 1; background: #0d1f3c; border-radius: 99px; height: 6px; overflow: hidden; }
+    #barra-fill { height: 100%; background: #4A9FD4; border-radius: 99px; width: 0%; transition: width 0.4s, background 0.3s; }
+    #barra-texto { color: #BDD7EE; font-size: 12px; white-space: nowrap; min-width: 120px; text-align: right; }
+
+    /* AVISO */
+    #aviso { max-width: 700px; margin: 20px auto 0; padding: 0 16px; }
+    #aviso div { background: #EBF3FB; border-left: 4px solid #2E75B6; padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 13px; color: #1F3864; line-height: 1.6; }
+    #aviso .oblig { color: #C0392B; font-weight: 700; }
+
+    /* CAMPOS */
+    #campos { max-width: 700px; margin: 20px auto 0; padding: 0 16px; }
+
+    .campo { background: #fff; border-radius: 10px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(30,56,100,0.07); transition: box-shadow 0.2s; }
+    .campo.activo { box-shadow: 0 0 0 2px #2E75B6, 0 4px 16px rgba(30,56,100,0.10); }
+
+    .campo-header { display: flex; align-items: stretch; background: #F7FAFD; border-bottom: 1px solid #E4ECF4; transition: background 0.2s; }
+    .campo.activo .campo-header { background: #EBF3FB; }
+    .campo-num { background: #2E75B6; color: white; font-weight: 700; font-size: 17px; min-width: 44px; display: flex; align-items: center; justify-content: center; }
+    .campo-info { padding: 11px 14px; flex: 1; }
+    .campo-titulo-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .campo-titulo { font-weight: 700; font-size: 14px; color: #1F3864; }
+    .badge-oblig { font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #FDECEA; color: #C0392B; font-weight: 700; }
+    .badge-opcl { font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #EEF4EE; color: #4A7A4A; font-weight: 700; }
+    .campo-instruccion { color: #4A7BA6; font-size: 12px; margin-top: 3px; font-style: italic; }
+
+    .campo-body { padding: 14px 16px; }
+
+    textarea, input[type=text] {
+      width: 100%; border: 1.5px solid #D0DBE8; border-radius: 6px;
+      padding: 10px 12px; font-size: 14px; font-family: sans-serif;
+      color: #1F3864; outline: none; background: #FDFEFF;
+      line-height: 1.6; transition: border-color 0.2s;
+    }
+    textarea { resize: vertical; }
+    textarea:focus, input[type=text]:focus { border-color: #2E75B6; }
+    input.extra { border-style: dashed; background: #FAFCFF; margin-top: 4px; }
+    input.extra:focus { border-style: solid; border-color: #2E75B6; }
+
+    /* NOTA IMÁGENES */
+    .nota-imagen { margin-top: 10px; background: #FFF8E1; border: 1.5px solid #FFD54F; border-radius: 6px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 10px; }
+    .nota-imagen .icono { font-size: 18px; line-height: 1.4; }
+    .nota-imagen .titulo { font-weight: 700; font-size: 12px; color: #7A5800; margin-bottom: 3px; }
+    .nota-imagen .desc { font-size: 12px; color: #7A5800; line-height: 1.6; }
+
+    /* SUBCAMPOS */
+    .sublabel { font-weight: 600; font-size: 12px; color: #4A6080; margin-bottom: 5px; margin-top: 2px; }
+    .subcampo-wrap { margin-bottom: 12px; }
+
+    /* CHECKS Y RADIO */
+    .opcion { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; cursor: pointer; user-select: none; }
+    .opcion-radio { align-items: center; }
+    .caja-check {
+      width: 18px; height: 18px; min-width: 18px; border: 2px solid #B0BEC5;
+      border-radius: 4px; background: white; display: flex; align-items: center;
+      justify-content: center; margin-top: 1px; transition: all 0.15s; flex-shrink: 0;
+    }
+    .caja-check.marcado { border-color: #2E75B6; background: #2E75B6; }
+    .caja-check .check-mark { color: white; font-size: 11px; line-height: 1; display: none; }
+    .caja-check.marcado .check-mark { display: block; }
+    .caja-radio {
+      width: 18px; height: 18px; min-width: 18px; border: 2px solid #B0BEC5;
+      border-radius: 50%; background: white; display: flex; align-items: center;
+      justify-content: center; transition: all 0.15s; flex-shrink: 0;
+    }
+    .caja-radio.marcado { border-color: #2E75B6; }
+    .caja-radio .radio-dot { width: 8px; height: 8px; border-radius: 50%; background: #2E75B6; display: none; }
+    .caja-radio.marcado .radio-dot { display: block; }
+    .opcion-texto { font-size: 13px; color: #6B7D8E; line-height: 1.5; transition: color 0.15s; }
+    .opcion-texto.activo { color: #1F3864; }
+
+    /* BOTÓN GENERAR */
+    #btn-wrap { text-align: center; margin: 24px 0 16px; }
+    #btn-generar {
+      background: #1F3864; color: white; border: none; border-radius: 8px;
+      padding: 14px 40px; font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(30,56,100,0.25); transition: all 0.2s; font-family: sans-serif;
+    }
+    #btn-generar:hover { background: #2E75B6; transform: translateY(-2px); }
+    #aviso-campos { color: #8A9BAD; font-size: 12px; margin-top: 8px; }
+
+    /* RESULTADO */
+    #resultado { background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(30,56,100,0.12); overflow: hidden; margin-bottom: 32px; display: none; }
+    #resultado-header { background: #1F3864; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; }
+    #resultado-header span { color: white; font-weight: 700; font-size: 14px; }
+    #btn-copiar {
+      background: #2E75B6; color: white; border: none; border-radius: 6px;
+      padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: sans-serif;
+    }
+    #btn-copiar.copiado { background: #4CAF50; }
+    #prompt-texto {
+      margin: 0; padding: 18px; font-size: 13px; font-family: 'Courier New', monospace;
+      color: #1F3864; background: #FAFBFD; white-space: pre-wrap; line-height: 1.7;
+      max-height: 420px; overflow-y: auto; border-top: 1px solid #E4ECF4;
+    }
+    #nota-final { background: #FFF8E1; border-top: 1px solid #FFD54F; padding: 11px 18px; display: flex; align-items: flex-start; gap: 8px; }
+    #nota-final p { font-size: 12px; color: #7A5800; line-height: 1.6; }
+
+    /* ── MÓVIL (iPhone grande: Plus, Pro Max) ── */
+    @media (max-width: 768px) {
+      body { padding-bottom: 80px; }
+
+      #banner { padding: 24px 18px 20px; }
+      #banner h1 { font-size: 26px; }
+      #banner p { font-size: 17px; }
+      #banner .etiqueta { font-size: 12px; }
+
+      #barra-wrap { padding: 12px 18px; }
+      #barra-bg { height: 9px; }
+      #barra-texto { font-size: 15px; min-width: 120px; }
+
+      #aviso { margin: 18px auto 0; padding: 0 14px; }
+      #aviso div { font-size: 17px; padding: 14px 16px; line-height: 1.7; }
+
+      #campos { margin: 18px auto 0; padding: 0 14px; }
+
+      .campo { margin-bottom: 16px; border-radius: 10px; }
+
+      .campo-num { min-width: 52px; font-size: 22px; }
+      .campo-info { padding: 14px 14px; }
+      .campo-titulo { font-size: 18px; line-height: 1.35; }
+      .campo-instruccion { font-size: 15px; margin-top: 6px; line-height: 1.55; }
+      .badge-oblig, .badge-opcl { font-size: 13px; padding: 3px 9px; }
+
+      .campo-body { padding: 16px 14px; }
+
+      textarea, input[type=text] {
+        font-size: 17px;
+        padding: 14px 14px;
+        border-radius: 8px;
+        line-height: 1.65;
+      }
+
+      .opcion {
+        padding: 9px 0;
+        margin-bottom: 6px;
+        gap: 14px;
+      }
+      .caja-check {
+        width: 28px; height: 28px; min-width: 28px;
+        border-radius: 6px;
+      }
+      .caja-check .check-mark { font-size: 17px; }
+      .caja-radio {
+        width: 28px; height: 28px; min-width: 28px;
+      }
+      .caja-radio .radio-dot { width: 13px; height: 13px; }
+      .opcion-texto { font-size: 17px; line-height: 1.55; }
+
+      .sublabel { font-size: 16px; margin-bottom: 8px; }
+      .subcampo-wrap { margin-bottom: 18px; }
+
+      .nota-imagen { padding: 14px; gap: 12px; border-radius: 8px; }
+      .nota-imagen .icono { font-size: 22px; }
+      .nota-imagen .titulo { font-size: 15px; }
+      .nota-imagen .desc { font-size: 14px; line-height: 1.6; }
+
+      #btn-generar {
+        padding: 18px 0;
+        width: 100%;
+        font-size: 18px;
+        border-radius: 12px;
+      }
+      #aviso-campos { font-size: 14px; }
+
+      #resultado-header { padding: 14px 16px; }
+      #resultado-header span { font-size: 16px; }
+      #btn-copiar {
+        padding: 10px 18px;
+        font-size: 15px;
+        border-radius: 8px;
+      }
+      #prompt-texto {
+        font-size: 14px;
+        padding: 16px;
+        max-height: 360px;
+        line-height: 1.8;
+      }
+      #nota-final { padding: 14px 16px; gap: 10px; }
+      #nota-final p { font-size: 14px; }
+    }
+
+    /* ── iPad ── */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      #banner h1 { font-size: 24px; }
+      #banner p { font-size: 15px; }
+      textarea, input[type=text] { font-size: 16px; }
+      .campo-titulo { font-size: 16px; }
+      .campo-instruccion { font-size: 14px; }
+      .opcion-texto { font-size: 15px; }
+      .caja-check { width: 22px; height: 22px; min-width: 22px; }
+      .caja-radio { width: 22px; height: 22px; min-width: 22px; }
+      #btn-generar { padding: 16px 44px; font-size: 17px; }
+      #aviso div { font-size: 15px; }
+    }
+
+    /* Mejora táctil general — sin highlight azul al tocar */
+    * { -webkit-tap-highlight-color: transparent; }
+    .opcion { -webkit-user-select: none; user-select: none; }
+  </style>
+</head>
+<body>
+
+  <!-- BANNER -->
+  <div id="banner">
+    <div class="inner">
+      <div class="etiqueta">Herramienta de prompting</div>
+      <h1 style="text-align:center;">Plantilla Claude</h1>
+      <p style="text-align:center;">Rellena los campos y genera tu prompt listo para usar</p>
+    </div>
+  </div>
+
+  <!-- BARRA DE PROGRESO -->
+  <div id="barra-wrap">
+    <div id="barra-inner">
+      <div id="barra-bg"><div id="barra-fill"></div></div>
+      <span id="barra-texto">Obligatorios: 0%</span>
+    </div>
+  </div>
+
+  <!-- AVISO -->
+  <div id="aviso">
+    <div><strong>Cómo usar:</strong> Llena los campos <span class="oblig">Obligatorios</span>. Al terminar presiona <strong>"Generar mi prompt"</strong>, copia el resultado y pégalo en Claude.</div>
+  </div>
+
+  <!-- CAMPOS -->
+  <div id="campos">
+
+    <!-- CAMPO 1 -->
+    <div class="campo" id="c1">
+      <div class="campo-header">
+        <div class="campo-num">1</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Qué quieres que haga Claude?</span>
+            <span class="badge-oblig">Obligatorio</span>
+          </div>
+          <div class="campo-instruccion">Empieza con un verbo de acción: Redacta, Analiza, Resume, Explica, Clasifica...</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <textarea id="instrucciones" rows="3" placeholder="Ej: Redacta un correo formal en español para solicitar una cotización a un proveedor nuevo."></textarea>
+      </div>
+    </div>
+
+    <!-- CAMPO 2 -->
+    <div class="campo" id="c2">
+      <div class="campo-header">
+        <div class="campo-num">2</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Cuál es la situación?</span>
+            <span class="badge-oblig">Obligatorio</span>
+          </div>
+          <div class="campo-instruccion">Explica quién eres, para qué empresa trabajas, cuál es el problema y quién va a leer la respuesta.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <textarea id="contexto" rows="4" placeholder="Ej: Trabajo en el área de compras de una empresa distribuidora. Necesito enviar un correo profesional a un proveedor nuevo. Lo leerá mi jefe antes de enviarlo."></textarea>
+      </div>
+    </div>
+
+    <!-- CAMPO 3 -->
+    <div class="campo" id="c3">
+      <div class="campo-header">
+        <div class="campo-num">3</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Qué tipo de experto debe ser Claude?</span>
+            <span class="badge-opcl">Opcional</span>
+          </div>
+          <div class="campo-instruccion">Si no sabes qué poner, escribe: "Actúa como un experto en [tema de tu pregunta]."</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <textarea id="rol" rows="2" placeholder="Ej: Actúa como un redactor profesional especializado en correos de negocios en español."></textarea>
+      </div>
+    </div>
+
+    <!-- CAMPO 4 -->
+    <div class="campo" id="c4">
+      <div class="campo-header">
+        <div class="campo-num">4</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Qué información debe analizar Claude?</span>
+            <span class="badge-oblig">Obligatorio</span>
+          </div>
+          <div class="campo-instruccion">Pega aquí los datos, textos, tablas o correos que Claude necesita leer. Este es el campo de mayor impacto.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <textarea id="datos" rows="6" placeholder="Pega aquí tu texto, tabla, correo, reporte u otro contenido.&#10;&#10;Si no tienes datos todavía, describe qué tipo de información tendrías."></textarea>
+        <div class="nota-imagen">
+          <span class="icono">🖼️</span>
+          <div>
+            <div class="titulo">¿Tienes imágenes para analizar o usar de referencia?</div>
+            <div class="desc">Las imágenes no van en este formulario. Cuando pegues el prompt en Claude, adjúntalas directamente en el mismo mensaje. Claude las verá y las analizará junto con tu solicitud.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPO 5 -->
+    <div class="campo" id="c5">
+      <div class="campo-header">
+        <div class="campo-num">5</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Qué NO debe hacer Claude?</span>
+            <span class="badge-oblig">Obligatorio</span>
+          </div>
+          <div class="campo-instruccion">Marca las reglas que quieres que Claude siga.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <div class="opcion" data-check="r1" role="button" tabindex="0">
+          <div class="caja-check marcado" id="box-r1"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto activo" id="txt-r1">Responde solo en español</span>
+        </div>
+        <div class="opcion" data-check="r2" role="button" tabindex="0">
+          <div class="caja-check marcado" id="box-r2"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto activo" id="txt-r2">No inventes datos ni cifras — si no sabes algo, dilo</span>
+        </div>
+        <div class="opcion" data-check="r3" role="button" tabindex="0">
+          <div class="caja-check marcado" id="box-r3"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto activo" id="txt-r3">No uses palabras técnicas sin explicarlas antes</span>
+        </div>
+        <div class="opcion" data-check="r4" role="button" tabindex="0">
+          <div class="caja-check marcado" id="box-r4"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto activo" id="txt-r4">No uses emojis ni emoticones</span>
+        </div>
+        <div class="opcion" data-check="r5" role="button" tabindex="0">
+          <div class="caja-check" id="box-r5"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-r5">Sé breve: máximo una página o 400 palabras</span>
+        </div>
+        <div class="opcion" data-check="r6" role="button" tabindex="0">
+          <div class="caja-check" id="box-r6"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-r6">No repitas información que ya está en la pregunta</span>
+        </div>
+        <div class="opcion" data-check="r7" role="button" tabindex="0">
+          <div class="caja-check marcado" id="box-r7"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto activo" id="txt-r7">Si algo no es posible, explícalo claramente</span>
+        </div>
+        <input type="text" class="extra" id="extra-restricciones" placeholder="Otra regla que quieras agregar...">
+      </div>
+    </div>
+
+    <!-- CAMPO 6 -->
+    <div class="campo" id="c6">
+      <div class="campo-header">
+        <div class="campo-num">6</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Cómo quieres que se vea la respuesta?</span>
+            <span class="badge-oblig">Obligatorio</span>
+          </div>
+          <div class="campo-instruccion">Elige UNA opción.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <div class="opcion opcion-radio" data-radio-grupo="formato" data-radio-id="f1" role="button" tabindex="0">
+          <div class="caja-radio" id="radio-f1"><div class="radio-dot"></div></div>
+          <span class="opcion-texto" id="rtxt-f1">Informe ejecutivo (Resumen + puntos clave + recomendación)</span>
+        </div>
+        <div class="opcion opcion-radio" data-radio-grupo="formato" data-radio-id="f2" role="button" tabindex="0">
+          <div class="caja-radio" id="radio-f2"><div class="radio-dot"></div></div>
+          <span class="opcion-texto" id="rtxt-f2">Correo formal (Asunto / Cuerpo / Despedida)</span>
+        </div>
+        <div class="opcion opcion-radio" data-radio-grupo="formato" data-radio-id="f3" role="button" tabindex="0">
+          <div class="caja-radio" id="radio-f3"><div class="radio-dot"></div></div>
+          <span class="opcion-texto" id="rtxt-f3">Tabla comparativa</span>
+        </div>
+        <div class="opcion opcion-radio" data-radio-grupo="formato" data-radio-id="f4" role="button" tabindex="0">
+          <div class="caja-radio" id="radio-f4"><div class="radio-dot"></div></div>
+          <span class="opcion-texto" id="rtxt-f4">Lista numerada de pasos</span>
+        </div>
+        <div class="opcion opcion-radio" data-radio-grupo="formato" data-radio-id="f5" role="button" tabindex="0">
+          <div class="caja-radio" id="radio-f5"><div class="radio-dot"></div></div>
+          <span class="opcion-texto" id="rtxt-f5">Texto corrido, sin encabezados</span>
+        </div>
+        <div class="opcion opcion-radio" data-radio-grupo="formato" data-radio-id="f6" role="button" tabindex="0">
+          <div class="caja-radio" id="radio-f6"><div class="radio-dot"></div></div>
+          <span class="opcion-texto" id="rtxt-f6">Respuesta corta, máximo 3 párrafos</span>
+        </div>
+        <input type="text" class="extra" id="extra-formato" placeholder="Detalle adicional del formato (columnas, longitud, estructura)...">
+      </div>
+    </div>
+
+    <!-- CAMPO 7 -->
+    <div class="campo" id="c7">
+      <div class="campo-header">
+        <div class="campo-num">7</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Cómo debe sonar la respuesta?</span>
+            <span class="badge-opcl">Opcional</span>
+          </div>
+          <div class="campo-instruccion">Puedes marcar más de uno.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <div class="opcion" data-check="t1" role="button" tabindex="0">
+          <div class="caja-check" id="box-t1"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-t1">Formal — para documentos o comunicaciones externas</span>
+        </div>
+        <div class="opcion" data-check="t2" role="button" tabindex="0">
+          <div class="caja-check" id="box-t2"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-t2">Ejecutivo — directo al punto, orientado a decisiones</span>
+        </div>
+        <div class="opcion" data-check="t3" role="button" tabindex="0">
+          <div class="caja-check" id="box-t3"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-t3">Técnico — preciso, con términos del área</span>
+        </div>
+        <div class="opcion" data-check="t4" role="button" tabindex="0">
+          <div class="caja-check" id="box-t4"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-t4">Conversacional — claro, como explicarle a un compañero</span>
+        </div>
+        <div class="opcion" data-check="t5" role="button" tabindex="0">
+          <div class="caja-check" id="box-t5"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-t5">Persuasivo — para propuestas o justificaciones</span>
+        </div>
+        <div class="opcion" data-check="t6" role="button" tabindex="0">
+          <div class="caja-check" id="box-t6"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-t6">Neutral — solo hechos, sin opinión</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPO 8 -->
+    <div class="campo" id="c8">
+      <div class="campo-header">
+        <div class="campo-num">8</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Cómo debería verse una buena respuesta?</span>
+            <span class="badge-opcl">Opcional</span>
+          </div>
+          <div class="campo-instruccion">Muéstrale a Claude un ejemplo del resultado que esperas. Esta es la técnica más efectiva.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <div class="subcampo-wrap">
+          <div class="sublabel">Un dato o situación de ejemplo:</div>
+          <textarea id="ejemplo_entrada" rows="2" placeholder="Pega aquí un dato de prueba o describe una situación representativa."></textarea>
+        </div>
+        <div class="subcampo-wrap">
+          <div class="sublabel">Así quiero que se vea la respuesta ideal:</div>
+          <textarea id="ejemplo_salida" rows="3" placeholder="Escribe o pega aquí cómo debe verse el resultado ideal."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPO 9 -->
+    <div class="campo" id="c9">
+      <div class="campo-header">
+        <div class="campo-num">9</div>
+        <div class="campo-info">
+          <div class="campo-titulo-wrap">
+            <span class="campo-titulo">¿Cuándo dirás que la respuesta fue buena?</span>
+            <span class="badge-opcl">Opcional</span>
+          </div>
+          <div class="campo-instruccion">Marca los criterios que debe cumplir la respuesta.</div>
+        </div>
+      </div>
+      <div class="campo-body">
+        <div class="opcion" data-check="c1" role="button" tabindex="0">
+          <div class="caja-check" id="box-c1"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-c1">No contiene datos inventados</span>
+        </div>
+        <div class="opcion" data-check="c2" role="button" tabindex="0">
+          <div class="caja-check" id="box-c2"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-c2">Respeta el formato que pedí</span>
+        </div>
+        <div class="opcion" data-check="c3" role="button" tabindex="0">
+          <div class="caja-check" id="box-c3"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-c3">Incluye al menos una recomendación concreta</span>
+        </div>
+        <div class="opcion" data-check="c4" role="button" tabindex="0">
+          <div class="caja-check" id="box-c4"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-c4">El lenguaje es apropiado para quien va a leerlo</span>
+        </div>
+        <div class="opcion" data-check="c5" role="button" tabindex="0">
+          <div class="caja-check" id="box-c5"><span class="check-mark">✓</span></div>
+          <span class="opcion-texto" id="txt-c5">No es más larga de lo que necesito</span>
+        </div>
+        <input type="text" class="extra" id="extra-criterios" placeholder="Criterio adicional...">
+      </div>
+    </div>
+
+    <!-- BOTÓN GENERAR -->
+    <div id="btn-wrap">
+      <button id="btn-generar">Generar mi prompt →</button>
+      <p id="aviso-campos">Completa los campos obligatorios para mejores resultados</p>
+    </div>
+
+    <!-- RESULTADO -->
+    <div id="resultado">
+      <div id="resultado-header">
+        <span>Tu prompt está listo</span>
+        <button id="btn-copiar">Copiar todo</button>
+      </div>
+      <pre id="prompt-texto"></pre>
+      <div id="nota-final">
+        <span style="font-size:16px">🖼️</span>
+        <p><strong>Si tienes imágenes:</strong> pega el prompt en Claude y adjunta las imágenes en el mismo mensaje. Claude las verá junto con el texto.</p>
+      </div>
+    </div>
+
+  </div><!-- /campos -->
+
+  <script>
+    // Estado de checkboxes
+    const checks = { r1:true, r2:true, r3:true, r4:true, r5:false, r6:false, r7:true, t1:false, t2:false, t3:false, t4:false, t5:false, t6:false, c1:false, c2:false, c3:false, c4:false, c5:false };
+    const radios = { formato: null };
+
+    // Textos de opciones para el prompt
+    const checkTextos = {
+      r1:"Responde solo en español", r2:"No inventes datos ni cifras — si no sabes algo, dilo",
+      r3:"No uses palabras técnicas sin explicarlas antes", r4:"No uses emojis ni emoticones",
+      r5:"Sé breve: máximo una página o 400 palabras", r6:"No repitas información que ya está en la pregunta",
+      r7:"Si algo no es posible, explícalo claramente",
+      t1:"Formal — para documentos o comunicaciones externas", t2:"Ejecutivo — directo al punto, orientado a decisiones",
+      t3:"Técnico — preciso, con términos del área", t4:"Conversacional — claro, como explicarle a un compañero",
+      t5:"Persuasivo — para propuestas o justificaciones", t6:"Neutral — solo hechos, sin opinión",
+      c1:"No contiene datos inventados", c2:"Respeta el formato que pedí",
+      c3:"Incluye al menos una recomendación concreta", c4:"El lenguaje es apropiado para quien va a leerlo",
+      c5:"No es más larga de lo que necesito"
+    };
+    const radioTextos = {
+      f1:"Informe ejecutivo (Resumen + puntos clave + recomendación)", f2:"Correo formal (Asunto / Cuerpo / Despedida)",
+      f3:"Tabla comparativa", f4:"Lista numerada de pasos", f5:"Texto corrido, sin encabezados", f6:"Respuesta corta, máximo 3 párrafos"
+    };
+
+    function toggleCheck(id) {
+      checks[id] = !checks[id];
+      const box = document.getElementById('box-' + id);
+      const txt = document.getElementById('txt-' + id);
+      box.classList.toggle('marcado', checks[id]);
+      txt.classList.toggle('activo', checks[id]);
+      actualizarProgreso();
+    }
+
+    function selectRadio(grupo, id) {
+      if (radios[grupo]) {
+        document.getElementById('radio-' + radios[grupo]).classList.remove('marcado');
+        document.getElementById('rtxt-' + radios[grupo]).classList.remove('activo');
+      }
+      radios[grupo] = id;
+      document.getElementById('radio-' + id).classList.add('marcado');
+      document.getElementById('rtxt-' + id).classList.add('activo');
+      actualizarProgreso();
+    }
+
+    // Eventos táctiles iOS-compatibles para checks y radios
+    function bindOpcion(el) {
+      const checkId = el.getAttribute('data-check');
+      const radioGrupo = el.getAttribute('data-radio-grupo');
+      const radioId = el.getAttribute('data-radio-id');
+
+      function handler(e) {
+        e.preventDefault();
+        if (checkId) toggleCheck(checkId);
+        if (radioGrupo && radioId) selectRadio(radioGrupo, radioId);
+      }
+
+      el.addEventListener('touchend', handler, { passive: false });
+      el.addEventListener('click', handler);
+    }
+
+    document.querySelectorAll('[data-check], [data-radio-id]').forEach(bindOpcion);
+
+    // Botón generar — compatible iOS
+    const btnGenerar = document.getElementById('btn-generar');
+    btnGenerar.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      generar();
+    }, { passive: false });
+
+    // Botón copiar — compatible iOS
+    const btnCopiar = document.getElementById('btn-copiar');
+    btnCopiar.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      copiar();
+    }, { passive: false });
+
+    // Activar borde azul al enfocar campos
+    document.querySelectorAll('.campo').forEach((el) => {
+      el.addEventListener('focusin', () => el.classList.add('activo'));
+      el.addEventListener('focusout', () => el.classList.remove('activo'));
+    });
+
+    function campoLleno(id) {
+      const el = document.getElementById(id);
+      return el && el.value.trim().length > 0;
+    }
+
+    function actualizarProgreso() {
+      const obligatorios = [
+        campoLleno('instrucciones'),
+        campoLleno('contexto'),
+        campoLleno('datos'),
+        Object.keys(checks).filter(k => k.startsWith('r')).some(k => checks[k]),
+        radios.formato !== null
+      ];
+      const n = obligatorios.filter(Boolean).length;
+      const pct = Math.round((n / obligatorios.length) * 100);
+      const fill = document.getElementById('barra-fill');
+      const texto = document.getElementById('barra-texto');
+      fill.style.width = pct + '%';
+      fill.style.background = pct === 100 ? '#4CAF50' : '#4A9FD4';
+      texto.style.color = pct === 100 ? '#81C784' : '#BDD7EE';
+      texto.textContent = pct === 100 ? '✓ Listo' : 'Obligatorios: ' + pct + '%';
+    }
+
+    // Escuchar cambios en textareas
+    document.querySelectorAll('textarea, input[type=text]').forEach(el => {
+      el.addEventListener('input', actualizarProgreso);
+    });
+
+    function generar() {
+      const lineas = [];
+
+      const push = (titulo, contenido) => { lineas.push(titulo); lineas.push(contenido); lineas.push(''); };
+
+      const instrucciones = document.getElementById('instrucciones').value.trim();
+      if (instrucciones) push('--- 1. ¿QUÉ QUIERES QUE HAGA CLAUDE? ---', instrucciones);
+
+      const contexto = document.getElementById('contexto').value.trim();
+      if (contexto) push('--- 2. ¿CUÁL ES LA SITUACIÓN? ---', contexto);
+
+      const rol = document.getElementById('rol').value.trim();
+      if (rol) push('--- 3. ¿QUÉ TIPO DE EXPERTO DEBE SER CLAUDE? ---', rol);
+
+      const datos = document.getElementById('datos').value.trim();
+      if (datos) push('--- 4. ¿QUÉ INFORMACIÓN DEBE ANALIZAR CLAUDE? ---', datos);
+
+      const restr = Object.keys(checks).filter(k => k.startsWith('r') && checks[k]).map(k => '• ' + checkTextos[k]);
+      const extraRestr = document.getElementById('extra-restricciones').value.trim();
+      if (extraRestr) restr.push('• ' + extraRestr);
+      if (restr.length) { lineas.push('--- 5. ¿QUÉ NO DEBE HACER CLAUDE? ---'); restr.forEach(r => lineas.push(r)); lineas.push(''); }
+
+      if (radios.formato) {
+        lineas.push('--- 6. ¿CÓMO QUIERES QUE SE VEA LA RESPUESTA? ---');
+        lineas.push(radioTextos[radios.formato]);
+        const extraFmt = document.getElementById('extra-formato').value.trim();
+        if (extraFmt) lineas.push(extraFmt);
+        lineas.push('');
+      }
+
+      const tonos = Object.keys(checks).filter(k => k.startsWith('t') && checks[k]).map(k => '• ' + checkTextos[k]);
+      if (tonos.length) { lineas.push('--- 7. ¿CÓMO DEBE SONAR LA RESPUESTA? ---'); tonos.forEach(t => lineas.push(t)); lineas.push(''); }
+
+      const ejE = document.getElementById('ejemplo_entrada').value.trim();
+      const ejS = document.getElementById('ejemplo_salida').value.trim();
+      if (ejE || ejS) {
+        lineas.push('--- 8. ¿CÓMO DEBERÍA VERSE UNA BUENA RESPUESTA? ---');
+        if (ejE) { lineas.push('Un dato o situación de ejemplo:'); lineas.push(ejE); }
+        if (ejS) { lineas.push('Así quiero que se vea la respuesta ideal:'); lineas.push(ejS); }
+        lineas.push('');
+      }
+
+      const crit = Object.keys(checks).filter(k => k.startsWith('c') && checks[k]).map(k => '• ' + checkTextos[k]);
+      const extraCrit = document.getElementById('extra-criterios').value.trim();
+      if (extraCrit) crit.push('• ' + extraCrit);
+      if (crit.length) { lineas.push('--- 9. ¿CUÁNDO DIRÁS QUE LA RESPUESTA FUE BUENA? ---'); crit.forEach(c => lineas.push(c)); lineas.push(''); }
+
+      const texto = lineas.join('\n').trim();
+      document.getElementById('prompt-texto').textContent = texto;
+      const res = document.getElementById('resultado');
+      res.style.display = 'block';
+      res.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copiar() {
+      const texto = document.getElementById('prompt-texto').textContent;
+      const btn = document.getElementById('btn-copiar');
+
+      // Método moderno (Chrome, Safari 13.1+)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+          btn.textContent = '✓ Copiado';
+          btn.classList.add('copiado');
+          setTimeout(() => { btn.textContent = 'Copiar todo'; btn.classList.remove('copiado'); }, 2500);
+        }).catch(() => copiarFallback(texto, btn));
+      } else {
+        copiarFallback(texto, btn);
+      }
+    }
+
+    function copiarFallback(texto, btn) {
+      // Fallback para Safari antiguo
+      const ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('copiado');
+        setTimeout(() => { btn.textContent = 'Copiar todo'; btn.classList.remove('copiado'); }, 2500);
+      } catch(e) {
+        btn.textContent = 'Selecciona y copia';
+      }
+      document.body.removeChild(ta);
+    }
+
+    actualizarProgreso();
+  </script>
+</body>
+</html>
