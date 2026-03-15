@@ -688,10 +688,14 @@
       if (crit.length) { lineas.push('--- 9. ¿CUÁNDO DIRÁS QUE LA RESPUESTA FUE BUENA? ---'); crit.forEach(c => lineas.push(c)); lineas.push(''); }
 
       const texto = lineas.join('\n').trim();
+      if (!texto) {
+        alert('Completa al menos el campo 1 (¿Qué quieres que haga Claude?) para generar el prompt.');
+        return;
+      }
       document.getElementById('prompt-texto').textContent = texto;
       const res = document.getElementById('resultado');
       res.style.display = 'block';
-      res.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => res.scrollIntoView({ behavior: 'smooth' }), 50);
     }
 
     function copiar() {
