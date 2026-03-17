@@ -895,7 +895,44 @@
       document.getElementById('prompt-texto').textContent = texto;
       const res = document.getElementById('resultado');
       res.style.display = 'block';
+      limpiarFormulario();
       setTimeout(() => res.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
+
+    function limpiarFormulario() {
+      // Limpiar textareas e inputs de texto
+      document.querySelectorAll('textarea[id], input[type=text][id]').forEach(el => {
+        el.value = '';
+      });
+      rolUltimoValido = '';
+
+      // Restaurar checks al estado inicial
+      const checksIniciales = { r1:true, r2:true, r3:true, r4:true, r5:false, r6:false, r7:true, t1:false, t2:false, t3:false, t4:false, t5:false, t6:false, c1:false, c2:false, c3:false, c4:false, c5:false };
+      Object.keys(checksIniciales).forEach(id => {
+        checks[id] = checksIniciales[id];
+        const box = document.getElementById('box-' + id);
+        const txt = document.getElementById('txt-' + id);
+        if (box) box.classList.toggle('marcado', checks[id]);
+        if (txt) txt.classList.toggle('activo', checks[id]);
+      });
+
+      // Limpiar radios
+      Object.keys(radios).forEach(grupo => {
+        const idActual = radios[grupo];
+        if (idActual) {
+          const radio = document.getElementById('radio-' + idActual);
+          const rtxt = document.getElementById('rtxt-' + idActual);
+          if (radio) radio.classList.remove('marcado');
+          if (rtxt) rtxt.classList.remove('activo');
+        }
+        radios[grupo] = null;
+      });
+
+      // Limpiar localStorage
+      limpiarEstado();
+
+      // Actualizar barra de progreso
+      actualizarProgreso();
     }
 
     function copiar() {
