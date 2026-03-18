@@ -1,1 +1,1 @@
-# plantilla-claude
+# plantilla-IA
